@@ -1,0 +1,47 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
+
+using namespace std;
+
+void main()
+{
+	std::string message;
+	std::string full_path = "c:\\Users\\1dani_000\\Desktop\\test.jpg";
+
+	//Creates an ifstream by opening the file at filepath
+	std::ifstream fileStream(full_path.c_str(), std::ios_base::binary | std::ios_base::ate);
+	if (!fileStream)
+	{
+		return;
+	}
+
+	//Gets the filesize of the input string
+	size_t fileSize = fileStream.tellg();
+
+	//Resets the position of the next character to be extracted from the stream to the initial character
+	fileStream.seekg(0);
+
+	//Buffers the contents of the file in the string message
+	char buf[512];
+	while (fileStream.read(buf, sizeof(buf)).gcount() > 0)
+		message.append(buf, fileStream.gcount());
+
+	//Puts the size of the file at fileSize
+	int length = message.length();
+
+	//Not sure if this is necessary but let's do it anyway
+	assert(length == fileSize);
+
+	std::cout << length / 1024 << " KB" << std::endl;
+}
+

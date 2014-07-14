@@ -1,0 +1,443 @@
+/*
+To-do list:
+3. Adapt transfer methods to handle vector and struct transfer, and also the proper param reconfigs and commands
+3.3. Allow the TCP_Connection class to reconfigure the parameters in SDOCT. Add control from client.
+3.4. Transfer the raw 3d vector of floating point data. Maybe adapt the Filename/Filesize message to describe the vector well enough for unpacking
+3.4.1. Serialization? http://stackoverflow.com/questions/19031674/sending-raw-data-over-boostasio
+3.4.2. Make sure unpacking is good enough (element size in bytes, etc)
+3.4.3. Make sure it's easy to add/interpret a header
+3.5. Find out how to build the .img file from the vector on client side
+
+4. How to ROS
+4.1. To some tutorials to get the general feel of it. Shouldn't look too much into it
+4.2. Try and understand what the OCT_Wrapper and OCT_Segmentation nodes do
+4.3. Handle the header ordeal
+4.4. Incorporate the OCT_Wrapper code into the node
+
+5. Improvements
+5.1. Find out how to control the target area of the scan (Needs lab testing)
+5.2. Find out how to set up all the different configurations (Needs lab testing)
+5.3. Find out the networks speed at the lab and consider transferring the camera output
+5.3.1. JPEG compression?
+
+*/
+//#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <Dummy SDOCT.h>
+
+class TCP_Connection : public boost::enable_shared_from_this<TCP_Connection>
+{
+private:
+	boost::asio::ip::tcp::socket m_socket;
+	SDOCT oct;
+
+	boost::asio::streambuf m_readBuffer;
+	std::string m_sendBuffer;
+	boost::array<char, 4096> m_sendFillBuffer;
+
+	std::ifstream m_fileStream;
+	std::string m_filePath;
+	std::string m_fileName;
+	size_t m_fileSize;
+
+	int m_startTime;
+	int m_endTime;
+
+	int m_rollingSum;
+	int m_lastPercentage = 0;
+
+	enum
+	{
+		XRANGE, //0
+		YRANGE, //1
+		XSTEPS, //2
+		YSTEPS  //3
+	};
+
+	TCP_Connection(boost::asio::io_service& io_service, SDOCT& oct) : m_socket(io_service), oct(oct)
+	{
+	}
+
+public:
+	//Creates a shared pointer to a TCP_Connection object. Note that all async handlers should be passed the shared_from_this() pointer instead of just 'this', or the TCP_Connection object will go out of scope while waiting for the handler to return
+	static boost::shared_ptr<TCP_Connection> create(boost::asio::io_service& io_service, SDOCT& oct)
+	{
+		return boost::shared_ptr<TCP_Connection>(new TCP_Connection(io_service, oct));
+	}
+
+	//Returns it's own socket object. Inside the class we just access the member variable directly for shorter syntax
+	boost::asio::ip::tcp::socket& socket()
+	{
+		return m_socket;
+	}
+
+	//Server begins listening for messages on the socket
+	void start()
+	{
+		boost::asio::async_read_until(m_socket, m_readBuffer,
+			'\0',
+			boost::bind(&TCP_Connection::handle_read_data,
+			shared_from_this(),
+			boost::asio::placeholders::error
+			)
+			);
+	}
+
+	//Called when async_read_until completes
+	void handle_read_data(const boost::system::error_code& error)
+	{
+		if (error.value() == 104)
+		{
+			std::cout << "Client disconnected" << std::endl;
+			return;
+		}
+		else if (error)
+		{
+			std::cout << "handle_read_data exception: " << error.message() << std::endl;
+			return;
+		}
+
+		//Pops and parses lines from the m_readBuffer individually
+		std::string line;
+		std::istream is(&m_readBuffer);
+		while (!is.eof())
+		{
+			std::getline(is, line);
+			std::cout << "Received: \"" << line << "\"\n";
+			shared_from_this()->parse_data(line);
+		}
+	}
+
+	void parse_data(const std::string& line)
+	{
+		try
+		{
+			int variableIndex = 0;
+			std::string valueString = "";
+			float convertedFloat = 0.0f;
+			int convertedInt = 0;
+
+			//Parses the first character of the message
+			switch (line[0])
+			{
+			case 'I':
+			{
+						if (line.size() != 2 || line[1] != 0) throw "whoops!";
+						oct.Init();
+						shared_from_this()->send_command_confirm(line, "oct.Init()");
+						return;
+			}
+			case 'C':
+			{
+						//Recovers the "01" into an int. Throws exception in case of error
+						variableIndex = stoi((line.substr(1, 2)));
+
+						//Locates the position of the substring that holds the new value
+						valueString = line.substr(4, line.length() - 4);
+
+						//Extract the value from the string, parsing the rest of the message
+						switch (line[3])
+						{
+						case 'F':
+							//Converts the float from a string. Throws exception in case of error
+							convertedFloat = stof(valueString);
+							if (variableIndex == XRANGE) oct.setXRange(convertedFloat);
+							else if (variableIndex == YRANGE) oct.setYRange(convertedFloat);
+
+							shared_from_this()->send_valuechange_confirm(line, variableIndex, convertedFloat);
+							return;
+						case 'I':
+							//Converts the int from a string. Throws exception in case of error
+							convertedInt = stoi(valueString);
+							if (variableIndex == XSTEPS) oct.setXSteps(convertedInt);
+							else if (variableIndex == YSTEPS) oct.setYSteps(convertedInt);
+
+							shared_from_this()->send_valuechange_confirm(line, variableIndex, convertedInt);
+							return;
+						}
+						//Fell off the switch, the fourth char is not F or I:
+						throw "whoops!";
+			}
+
+			case 'V':
+			{
+						//Requested volumetric data
+						boost::system::error_code error;
+
+						std::string m_filePath = "c:\\users\\1dani_000\\desktop\\";
+						std::string m_fileName = "file.exe";
+
+						//creates an ifstream by opening the file at m_filePath
+						m_fileStream.open((m_filePath + m_fileName).c_str(), std::ios_base::binary | std::ios_base::ate);
+						if (!m_fileStream)
+						{
+							std::cout << "Can't open that file!" << std::endl;
+							return;
+						}
+
+						//gets the m_fileSize of the input string
+						m_fileSize = m_fileStream.tellg();
+
+						//resets the position of the next character to be extracted from the stream to the initial character
+						m_fileStream.seekg(0);
+
+						//responds with the file size (and name, in the future)
+						m_sendBuffer = "Filesize: " + boost::lexical_cast<std::string>(m_fileSize)+"\nFilename: " + m_fileName;
+
+						std::cout << "To client:\n" << m_sendBuffer << std::endl;
+						m_socket.async_send(boost::asio::buffer(m_sendBuffer.c_str(),
+							m_sendBuffer.length() + 1
+							),
+							boost::bind(&TCP_Connection::handle_send_file_info,
+							shared_from_this(),
+							boost::asio::placeholders::error
+							)
+							);
+						m_startTime = time(0);
+
+						return;
+			}
+			case 'B':
+			{
+						//Requested B-Mode 
+			}
+
+			}//Closes switch
+
+			//Fell off the switch
+			throw "whoops!";
+
+
+		}//Closes try block
+		catch (...)
+		{
+			m_sendBuffer = "Resend: " + line;
+
+			m_socket.async_send(boost::asio::buffer(m_sendBuffer.c_str(),
+				m_sendBuffer.length() + 1
+				),
+				boost::bind(&TCP_Connection::handle_send_data,
+				shared_from_this(),
+				boost::asio::placeholders::error
+				)
+				);
+			return;
+		}
+	}
+
+	//Gets called when the file info gets sent. Sends the file content
+	void handle_send_file_info(const boost::system::error_code& error)
+	{
+		//Does this need to be in an infinite for loop?
+		if (!error)
+		{
+			if (m_fileStream.eof() == false)
+			{
+				m_fileStream.read(m_sendFillBuffer.c_array(), (std::streamsize)m_sendFillBuffer.size());
+				if (m_fileStream.gcount() <= 0)
+				{
+					std::cout << "handle_send_file_info exception: read file error " << std::endl;
+					return;
+				}
+
+				m_rollingSum += m_fileStream.gcount();
+
+				int number = (m_rollingSum * 100) / m_fileSize;
+
+				if (number % 10 == 0 && number != m_lastPercentage)
+				{
+					std::cout << "File transfer " << number << "% complete: " << m_rollingSum << " out of " << m_fileSize << " bytes. " << std::endl;
+					m_lastPercentage = number;
+				}
+
+				//Notice the completion handler. This whole function is called recursively until m_fileStream is over
+				boost::asio::async_write(m_socket, boost::asio::buffer(m_sendFillBuffer.c_array(),
+					m_fileStream.gcount()
+					),
+					boost::bind(&TCP_Connection::handle_send_file_info,
+					shared_from_this(),
+					boost::asio::placeholders::error
+					)
+					);
+
+				if (error)
+				{
+					std::cout << "handle_send_file_info exception: send error" << error << std::endl;
+					return;
+				}
+			}
+			//Transfer is complete. Report statistics and go back to read/write infinite loop
+			else
+			{
+				m_endTime = time(0);
+				float diff = m_endTime - m_startTime;
+				std::cout << "Total time: " << diff << " s. Speed: " << (((float)m_fileSize) / diff) * (1 / 1024.0f) << " KBps " << std::endl;
+
+				boost::asio::async_read_until(m_socket, m_readBuffer, '\0',
+					boost::bind(&TCP_Connection::handle_read_data,
+					shared_from_this(),
+					boost::asio::placeholders::error
+					)
+					);
+			}
+		}
+		else
+		{
+			std::cout << "handle_send_file_info exception: " << error.message() << "\n";
+		}
+	}
+
+	template<typename T>
+	void send_valuechange_confirm(const std::string& line, int variableIndex, T convertedNumber)
+	{
+		m_sendBuffer = "Accepted: \'" + line + "\' will change variable number " + boost::lexical_cast<std::string>(variableIndex)+" to the new value of " + boost::lexical_cast<std::string>(convertedNumber);
+
+		m_socket.async_send(boost::asio::buffer(m_sendBuffer.c_str(),
+			m_sendBuffer.length() + 1
+			),
+			boost::bind(&TCP_Connection::handle_send_data,
+			shared_from_this(),
+			boost::asio::placeholders::error
+			)
+			);
+	}
+
+	void send_command_confirm(const std::string& line, const std::string& calledFunc)
+	{
+		m_sendBuffer = "Accepted: \'" + line + "\' has called " + calledFunc;
+
+		m_socket.async_send(boost::asio::buffer(m_sendBuffer.c_str(),
+			m_sendBuffer.length() + 1
+			),
+			boost::bind(&TCP_Connection::handle_send_data,
+			shared_from_this(),
+			boost::asio::placeholders::error
+			)
+			);
+	}
+
+	void handle_send_data(const boost::system::error_code& error)
+	{
+		std::cout << "To client:\n" << m_sendBuffer << std::endl;
+		if (error)
+		{
+			std::cout << "handle_send_data exception: " << error.message() << std::endl;
+			return;
+		}
+
+		boost::asio::async_read_until(m_socket, m_readBuffer, '\0',
+			boost::bind(&TCP_Connection::handle_read_data,
+			shared_from_this(),
+			boost::asio::placeholders::error
+			)
+			);
+	}
+};
+
+//=================================================================================================================================
+
+class TCP_Server
+{
+private:
+	//Shortens this absolutely ridiculous syntax in a small amount 
+	typedef boost::asio::ip::tcp tcp;
+	tcp::acceptor m_acceptor;
+	SDOCT &oct;
+
+public:
+	//Constructs the acceptor and sockets with the proper input from the class constructor. Should only deal with IPv4 at the specific port
+	TCP_Server(boost::asio::io_service& service, SDOCT& oct) : m_acceptor(service, tcp::endpoint(tcp::v4(), 12345)), oct(oct)
+	{
+		boost::asio::ip::tcp::no_delay opt_nodelay(true);
+		m_acceptor.set_option(opt_nodelay);
+		do_accept();
+	}
+
+private:
+	void do_accept()
+	{
+		boost::shared_ptr<TCP_Connection> new_connection = TCP_Connection::create(m_acceptor.get_io_service(), this->oct);
+
+		m_acceptor.async_accept(new_connection->socket(), boost::bind(&TCP_Server::handle_accept, this, new_connection, boost::asio::placeholders::error));
+	}
+	//Completion handler for async_accept
+
+	void handle_accept(boost::shared_ptr<TCP_Connection> new_connection, const boost::system::error_code& error)
+	{
+		if (error)
+		{
+			std::cout << "handle_accept exception: " << error.message() << std::endl;
+		}
+		else
+		{
+			std::cout << "New client connected" << std::endl;
+			//Reads data. Calls handle_read_data when complete
+			new_connection->socket().set_option(boost::asio::ip::tcp::no_delay(true));
+			new_connection->start();
+		}
+		do_accept();
+	}
+};
+
+
+//===============================================================================================================================
+
+int main()
+{
+	boost::asio::io_service service;
+	SDOCT oct;
+
+	TCP_Server server(service, oct);
+
+	//SDOCT oct;
+	//Needs to be passed to the server/connection
+	//oct.Init(); is called to initialize it
+	//this->oct.setVolScanProp(10,100,10,100); sets some configs apparently
+	/*This calls volumetric data
+
+	oct_volume oct_vol;
+
+	std::vector<unsigned long> test = this->oct.captureVolScan();
+
+	std::cout << "Elements:" << test.size() << std::endl;
+
+	//Write current config to struct
+	this->oct.getConfig(oct_vol.x_range,oct_vol.y_range,oct_vol.x_steps,oct_vol.y_steps);
+	short *temp;
+	this->oct.getVolume(temp);
+
+	memcpy(temp,oct_vol.data,2*sizeof(short));
+
+	test.clear();
+	*/
+
+	service.run();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
