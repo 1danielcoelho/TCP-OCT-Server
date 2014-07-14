@@ -9,7 +9,7 @@ TCP_Server::TCP_Server(boost::asio::io_service& service, SDOCT& oct) : m_accepto
 	std::cout << "Constructor ended\n";
 	do_accept();
 }
-
+ 
 void TCP_Server::do_accept()
 {
 	std::cout << "do_accept called\n";
