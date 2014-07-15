@@ -49,15 +49,19 @@ void TCP_Connection::parse_data(const char* message)
 		//Reads the 32 bytes of the 8 4-byte variables transferred as params
 		boost::asio::read(m_socket, m_readBuffer, boost::asio::transfer_exactly(32));
 		
+		//Retrieves the data out of the read buffer in a simple c char array format easier to deal with
 		const char* readBufferData = boost::asio::buffer_cast<const char*>(m_readBuffer.data());
 
 		//Sets the new params into the oct
 		this->set_oct_params(readBufferData);
 				
+		//Starts up the m_volScanMessage by building the 512 byte header 
 		this->prepare_header(m_volScanMessage);
 
+		//Appends the voxel data to the m_volScanMessage
 		m_oct.captureVolScan(m_volScanMessage);
 
+		//Finds the current filesize of m_volScanMessage (used to detect when transfer is complete) and begins message transfer
 		m_fileSize = m_volScanMessage.size();
 		this->send_volScan_message();	
 	}
@@ -68,7 +72,7 @@ void TCP_Connection::parse_data(const char* message)
 	else
 	{
 		//Incorrect request
-		throw "whoops!";
+		throw "Incorrect/invalid request! It should either be a \'P\' for a volume scan or a \'B\' for a B scan";
 	}
 }
 
@@ -156,7 +160,6 @@ void TCP_Connection::prepare_header(std::vector<uint8_t>& header)
 void TCP_Connection::send_volScan_message()
 {
 	m_sendFillBuffer[2048] = 0;
-	m_startTime = time(0);
 
 	for (int i = 0; i < 512; i++)
 	{
@@ -194,8 +197,8 @@ void TCP_Connection::send_volScan_message()
 	std::cout << "File transfer complete!\n";
 	std::cout << m_fileSize << " " << m_volScanMessage.size() << "\n\n";
 
-	float diff = millisEnd - millisStart;
-	std::cout << "Total time: " << diff << " s. Speed: " << (((float)m_fileSize) / diff*1000.0) * (1 / 1024.0f) << " KBps " << std::endl;
+	float diff = (millisEnd - millisStart)/1000.0;
+	std::cout << "Total time: " << diff << " s. Speed: " << (((float)m_fileSize) / diff) * (1 / 1024.0f) << " KBps " << std::endl;
 
 	m_volScanMessage.clear();
 }
