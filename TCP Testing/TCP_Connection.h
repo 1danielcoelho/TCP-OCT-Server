@@ -22,7 +22,7 @@
 #include <Dummy SDOCT.h>
 
 //This class moderates the transfer of information between the server and the client. It is created by a TCP_Server instance and gets deleted when the connection is droppedy
-class TCP_Connection : public boost::enable_shared_from_this<TCP_Connection>
+class TCP_Connection
 {
 private:
 	boost::asio::ip::tcp::socket m_socket;
@@ -45,9 +45,6 @@ public:
 	//Constructor receives an io_service instance and an SDOCT instance
 	TCP_Connection(boost::asio::io_service& io_service, SDOCT& m_oct);
 	
-	//Creates a shared pointer to a TCP_Connection object. Note that all async handlers should be passed the shared_from_this() pointer instead of just 'this', or the TCP_Connection object will sometimes go out of scope and die while waiting for the handler to return
-	static boost::shared_ptr<TCP_Connection> create(boost::asio::io_service& io_service, SDOCT& m_oct);
-
 	//Returns it's own socket object. Inside the class we just access the member variable directly for shorter syntax
 	boost::asio::ip::tcp::socket& socket();
 

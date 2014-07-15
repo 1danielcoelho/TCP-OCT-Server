@@ -27,9 +27,8 @@ public:
 	TCP_Server(boost::asio::io_service& service, SDOCT& oct);
 
 private:
-	//These two functions run in a loop. They wait and accept an incomming connection, create a shared pointer to that created socket, then create and start a TCP_Connection instance. When and if the client drops, do_accept() is called again and the servers just waits for the next connection
+	//This function runs recursively. They wait and accept an incomming connection, create a shared pointer to that created socket, then create and start a TCP_Connection instance. When and if the client drops, do_accept() is called again and the servers just waits for the next connection
 	void do_accept();
-	void handle_accept(boost::shared_ptr<TCP_Connection> new_connection, const boost::system::error_code& error);
 };
 
 #endif 

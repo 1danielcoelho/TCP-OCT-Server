@@ -12,17 +12,25 @@ TCP_Server::TCP_Server(boost::asio::io_service& service, SDOCT& oct) : m_accepto
  
 void TCP_Server::do_accept()
 {
-	std::cout << "do_accept called\n";
-	boost::shared_ptr<TCP_Connection> new_connection = TCP_Connection::create(m_acceptor.get_io_service(), this->m_oct);
+	try
+	{
+		std::cout << "do_accept called\n";
+		TCP_Connection* new_connection = new TCP_Connection(m_acceptor.get_io_service(), this->m_oct);
 
-	std::cout << "Waiting for connections" << std::endl;
-	m_acceptor.accept(new_connection->socket());
+		std::cout << "Waiting for connections" << std::endl;
+		m_acceptor.accept(new_connection->socket());
 
-	std::cout << "New client connected" << std::endl;
-	new_connection->start();
-	
-	m_acceptor.close();
-	std::cout << "do_accept ended\n";
+		std::cout << "New client connected" << std::endl;
+		new_connection->start();
+
+		delete new_connection;
+		std::cout << "do_accept ended\n";
+		
+	}
+	catch (...)
+	{
+		std::cout << "whoops\n";
+	}
 	do_accept();
 }
 

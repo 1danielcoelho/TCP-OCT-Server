@@ -4,11 +4,6 @@ TCP_Connection::TCP_Connection(boost::asio::io_service& io_service, SDOCT& oct) 
 {	
 }
 
-boost::shared_ptr<TCP_Connection> TCP_Connection::create(boost::asio::io_service& io_service, SDOCT& oct)
-{
-	return boost::shared_ptr<TCP_Connection>(new TCP_Connection(io_service, oct));
-}
-
 boost::asio::ip::tcp::socket& TCP_Connection::socket()
 {
 	return m_socket;
@@ -33,7 +28,7 @@ void TCP_Connection::start()
 	std::cout << "Received: \"" << message << "\"\n";
 
 	//Parses the char array
-	shared_from_this()->parse_data(message);
+	this->parse_data(message);
 }
 
 void TCP_Connection::parse_data(const char* message)
@@ -57,14 +52,14 @@ void TCP_Connection::parse_data(const char* message)
 		const char* readBufferData = boost::asio::buffer_cast<const char*>(m_readBuffer.data());
 
 		//Sets the new params into the oct
-		shared_from_this()->set_oct_params(readBufferData);
+		this->set_oct_params(readBufferData);
 				
-		shared_from_this()->prepare_header(m_volScanMessage);
+		this->prepare_header(m_volScanMessage);
 
 		m_oct.captureVolScan(m_volScanMessage);
 
 		m_fileSize = m_volScanMessage.size();
-		shared_from_this()->send_volScan_message();	
+		this->send_volScan_message();	
 	}
 	else if (*message == 'B')
 	{
@@ -100,14 +95,14 @@ void TCP_Connection::set_oct_params(const char* paramMessage)
 	memcpy(&yoffset, &(paramMessage[29]), sizeof(float));
 
 	//Set the oct params to the values from the temp variables
-	shared_from_this()->m_oct.setXRange(xrange);
-	shared_from_this()->m_oct.setYRange(yrange);
-	shared_from_this()->m_oct.setZRange(zrange);
-	shared_from_this()->m_oct.setXSteps(xsteps);
-	shared_from_this()->m_oct.setYSteps(ysteps);
-	shared_from_this()->m_oct.setZSteps(zsteps);
-	shared_from_this()->m_oct.setXOffset(xoffset);
-	shared_from_this()->m_oct.setYOffset(yoffset);
+	this->m_oct.setXRange(xrange);
+	this->m_oct.setYRange(yrange);
+	this->m_oct.setZRange(zrange);
+	this->m_oct.setXSteps(xsteps);
+	this->m_oct.setYSteps(ysteps);
+	this->m_oct.setZSteps(zsteps);
+	this->m_oct.setXOffset(xoffset);
+	this->m_oct.setYOffset(yoffset);
 
 	//Print out the change log for debug
 	std::cout << "Params changed to:\n\t\tXRANGE: " << xrange
@@ -136,16 +131,16 @@ void TCP_Connection::prepare_header(std::vector<uint8_t>& header)
 	}
 
 	//Fetch the current parameters from the oct scanner to build the header. Only these parameters are used by the client application, but the 512 byte size is kept in case other parameters start being used in the future
-	uint32_t numOfImagesInFile = shared_from_this()->m_oct.getYSteps();
-	uint32_t imageWidth = shared_from_this()->m_oct.getXSteps();
-	uint32_t imageDepth = shared_from_this()->m_oct.getZSteps();
-	float scanWidth = shared_from_this()->m_oct.getXRange();
-	float scanLength = shared_from_this()->m_oct.getYRange();
+	uint32_t numOfImagesInFile = this->m_oct.getYSteps();
+	uint32_t imageWidth = this->m_oct.getXSteps();
+	uint32_t imageDepth = this->m_oct.getZSteps();
+	float scanWidth = this->m_oct.getXRange();
+	float scanLength = this->m_oct.getYRange();
 
 	//Fetch the other parameters from the oct. These aren't built by the standard .img files, but are also packed for sake of completeness
-	float scanDepth = shared_from_this()->m_oct.getZRange();
-	float xOffset = shared_from_this()->m_oct.getXOffset();
-	float yOffset = shared_from_this()->m_oct.getYOffset();
+	float scanDepth = this->m_oct.getZRange();
+	float xOffset = this->m_oct.getXOffset();
+	float yOffset = this->m_oct.getYOffset();
 
 	//Copy the necessary header variables into the header vector
 	memcpy(&header[16], &numOfImagesInFile, sizeof(uint32_t));
