@@ -11,7 +11,7 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <Dummy SDOCT.h>
+#include <SDOCT.h>
 #include <TCP_Connection.h>
 
 //This class handles accepting and creating TCP_Connections between the server and potential clients

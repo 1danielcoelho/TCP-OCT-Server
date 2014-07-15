@@ -14,28 +14,17 @@ SDOCT::~SDOCT()
 
 void SDOCT::Init()
 {
-	std::cout << "		Initializing probe\n";
 	// Init device & probe
 	//this->dev = initDevice();
-
-	//this->probe = initStandardProbe(this->dev);
-
-	////Setup internal data processing
+	//this->probe = initProbe(this->dev, "Microscope");
+	//Setup internal data processing
 	//this->proc = createProcessingForDevice(this->dev);
-
-	//Start up the probe with some valid default values
-	/*setXRange(2.0);
-	setYRange(2.0);
-	setZRange(2.762);
-	setXSteps(64);
-	setYSteps(64);
-	setZSteps(1024);*/
-
-	setXRange(1.0);
-	setYRange(1.0);
-	setZRange(7.0);
+	std::cout << "Initializing probe\n";
+	setXRange(1.0f);
+	setYRange(1.0f);
+	setZRange(1.0f);
 	setXSteps(1);
-	setYSteps(200);
+	setYSteps(1000);
 	setZSteps(1);
 }
 
@@ -43,31 +32,29 @@ void SDOCT::Close()
 {
 	//closeProbe(this->probe);
 	//closeDevice(this->dev);
-	std::cout << "		Closing probe\n";
+	std::cout << "Closing probe\n";
 }
 
 //Setting up SDK data handlers
 void SDOCT::InitDataHandler()
 {
-	std::cout << "		Initializing data handlers\n";
 	/*this->rawhandle = createRawData();
 	this->datahandle = createData();
 	this->voldata = createData();
 	this->colorhandle = createColoredData();
-	this->color32handle = createColoring32Bit(ColorScheme_RGBA32_BlackAndWhite);
-	this->camerahandle = createColoredData();*/
+	this->color32handle = createColoring32Bit(ColorScheme_RGBA32_BlackAndWhite);*/
+	std::cout << "Initializing data handlers\n";
 }
 
 //clean up SDK data handler
 void SDOCT::CleanDataHandler()
 {
-	std::cout << "		Cleaning data handlers\n";
 	/*clearRawData(this->rawhandle);
 	clearData(this->datahandle);
 	clearData(this->voldata);
 	clearColoredData(this->colorhandle);
-	clearColoring32Bit(this->color32handle);
-	clearColoredData(this->camerahandle);*/
+	clearColoring32Bit(this->color32handle);*/
+	std::cout << "Cleaning data handlers\n";
 }
 
 //Setters
@@ -89,17 +76,6 @@ void SDOCT::setZRange(double zrange)
 	std::cout << "zrange set to " << zrange << std::endl;
 }
 
-void SDOCT::setXOffset(double xoffset)
-{
-	
-	std::cout << "xoffset set to " << xoffset << std::endl;
-}
-
-void SDOCT::setYOffset(double yoffset)
-{
-	std::cout << "yoffset set to " << yoffset << std::endl;
-}
-
 void SDOCT::setXSteps(int xsteps)
 {
 	this->xsteps = xsteps;
@@ -112,7 +88,7 @@ void SDOCT::setYSteps(int ysteps)
 	std::cout << "ysteps set to " << ysteps << std::endl;
 }
 
-void SDOCT::setZSteps(int zsteps)
+void SDOCT::setZSteps(int ysteps)
 {
 	this->zsteps = zsteps;
 	std::cout << "zsteps set to " << zsteps << std::endl;
@@ -131,17 +107,8 @@ int SDOCT::getYSteps()
 
 int SDOCT::getZSteps()
 {
-	return this->zsteps;
-}
-
-double SDOCT::getXOffset()
-{
-	return 666.777;
-}
-
-double SDOCT::getYOffset()
-{
-	return 777.666;
+	//USE SDK command
+	return 1;
 }
 
 double SDOCT::getXRange()
@@ -158,6 +125,7 @@ double SDOCT::getZRange()
 {
 	return this->zrange;
 }
+
 void SDOCT::captureVolScan(std::vector<uint8_t>& result)
 {
 	InitDataHandler();

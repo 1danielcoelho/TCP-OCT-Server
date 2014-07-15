@@ -174,7 +174,7 @@ void TCP_Connection::send_volScan_message()
 	GetSystemTime(&time);
 	WORD millisStart = (time.wSecond * 1000) + time.wMilliseconds;
 
-	for (int i = 0; i < m_fileSize; i++)
+	for (unsigned int i = 0; i < m_fileSize; i++)
 	{
 		//The ammount to transfer is usually the total capacity of the send buffer, unless the ammount of bytes still left to transfer is smaller than that capacity, in which case just ammount left is sent
 		int ammountToSend = min(m_sendFillBuffer.size(), m_fileSize - i);

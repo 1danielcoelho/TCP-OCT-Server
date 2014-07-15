@@ -1,5 +1,5 @@
-#ifndef DUMMY_SDOCT_H
-#define DUMMY_SDOCT_H
+#ifndef SDOCT_H
+#define SDOCT_H
 
 //#include "SpectralRadar.h"
 #include "string"
@@ -39,13 +39,8 @@ public:
 	void setYRange(double);
 	void setZRange(double);
 
-	double getXOffset();
-	double getYOffset();
-	void setXOffset(double);
-	void setYOffset(double);
-
 	void captureVolScan(std::vector<uint8_t>&);
-	
+
 	void setAScanProperties(double Contrast, double Brightness, double dBRange, double fMaxSigAmplitude);
 
 
@@ -76,4 +71,4 @@ private:
 };
 
 
-#endif
+#endif // SDOCT_H

@@ -29,8 +29,9 @@ void TCP_Server::do_accept()
 	}
 	catch (...)
 	{
-		std::cout << "whoops\n";
+		std::cout << "Exception in do accept. Dropping connection and waiting for the next one\n";
 	}
+
 	do_accept();
 }
 
