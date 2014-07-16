@@ -1,38 +1,31 @@
 /*
 To-do list:
 
->> Things to do here
--Setup wrapper class to simulate ROS
--Study ROS service request/response a little bit more
-+What is the format of the request/response
-+Any files that need to be created
-Make sure I know how to add them to CMakeLists.txt
--40 bytes between B scans
--Image streaming?
-
 >> Things to do at the lab
--Update boost
-+Find out where all the boost files are (includes and libraries)
-+Try and update boost with 'sudo apt-get install libboost-all-dev'
--Qtcreator and ROS
-+Figure out if I have all the files I need and how to include them
-+Figure out how to run the OCT_Wrapper node and how to call its functions and services
--Client - Server connection
-+Transfer a block with all params before capture to prevent spam when changing sliders on dynamic reconfigure
--Dynamic reconfigure
-+Find out how to actually open the interface
-+Change the 'default' params to the new ones
-+Find out how it updates
-+Keep a config member file and update it with the newest values on callback. Serialize and transmit this config file before a scan
--Service, requests and responses
-+What services am I going to need?
-Initially make it receive a voxel data request, respond by fetching a scan
--Remember to update the CMakeLists file with the possible new additions
+	-Find out the entirety of the OCTImage object
+
+	-Testing
+		+Check to see if there is any code in the demo that renders 4d plots
+	-Qtcreator and ROS
+		+Figure out how to run the OCT_Wrapper node and how to call its functions and services
+		+Find out what swap and resize do
+			They are methods of imageMessage.data, inside publishImageDataFromDynamicReconfigure.
+			I could pass directly the data pointer from m_client if swap copies by value. If it's some kind of reference then that's not doable since I can't guarantee m_fileData stays alive forever		
+	-Client - Server connection
+		+Transfer a block with all params before capture to prevent spam when changing sliders on dynamic reconfigure
+	-Dynamic reconfigure
+		+Add groups to the cfg file
+		+Lidar com o Z range depender do Z steps
+		+Complete publishImageDataFromDynamicReconfigure
+		+Add octType in the interface exactly like the publish function (like a param pre-set)
+	-Service, requests and responses
+		+Are all three services needed? We could pass the octType or the other params through the message
+
 >> Improvements
--Find a way of looking at the data produced by a volume scan
--Have the client try and reconnect after a connection has been dropped for some reason
--Find out the networks speed at the lab and consider transferring the camera output
-+JPEG compression?
+	-Find a way of looking at the data produced by a volume scan
+	-Have the client try and reconnect after a connection has been dropped for some reason
+	-Find out the networks speed at the lab and consider transferring the camera output
+		+JPEG compression?
 
 */
 
@@ -42,7 +35,7 @@ Initially make it receive a voxel data request, respond by fetching a scan
 #include "boost/asio.hpp"
 #include <boost/asio.hpp>
 
-#include <SDOCT.h>
+#include <Dummy SDOCT.h>
 #include <TCP_Server.h>
 
 #include <iostream>

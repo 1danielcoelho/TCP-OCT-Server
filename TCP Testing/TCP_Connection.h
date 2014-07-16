@@ -16,7 +16,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <SDOCT.h>
+#include <Dummy SDOCT.h>
 
 //This class moderates the transfer of information between the server and the client. It is created by a TCP_Server instance and gets deleted when the connection is droppedy
 class TCP_Connection

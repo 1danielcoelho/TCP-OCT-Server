@@ -161,7 +161,7 @@ void TCP_Connection::send_volScan_message()
 {
 	m_sendFillBuffer[2048] = 0;
 
-	for (int i = 0; i < 512; i++)
+	for (int i = 512; i < 512+200; i++)
 	{
 		std::cout << (int)((unsigned char)m_volScanMessage[i]) << " ";
 

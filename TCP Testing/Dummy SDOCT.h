@@ -1,5 +1,5 @@
-#ifndef SDOCT_H
-#define SDOCT_H
+#ifndef DUMMY_SDOCT_H
+#define DUMMY_SDOCT_H
 
 //#include "SpectralRadar.h"
 #include "string"
@@ -34,10 +34,15 @@ public:
 
 	double getXRange();
 	double getYRange();
-	double getZRange();	
+	double getZRange();
 	void setXRange(double);
 	void setYRange(double);
 	void setZRange(double);
+
+	double getXOffset();
+	double getYOffset();
+	void setXOffset(double);
+	void setYOffset(double);
 
 	void captureVolScan(std::vector<uint8_t>&);
 
@@ -59,7 +64,7 @@ private:
 	double xshift;
 	double yshift;
 	double angle;
-	
+
 	//Flags
 	bool BScanPropertiesFlag;
 	bool BScanAttitudeFlag;
@@ -70,5 +75,4 @@ private:
 	void UpdateBScanAttitude();
 };
 
-
-#endif // SDOCT_H
+#endif
