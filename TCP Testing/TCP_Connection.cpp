@@ -161,13 +161,6 @@ void TCP_Connection::send_volScan_message()
 {
 	m_sendFillBuffer[2048] = 0;
 
-	for (int i = 512; i < 512+200; i++)
-	{
-		std::cout << (int)((unsigned char)m_volScanMessage[i]) << " ";
-
-		if (i % 10 == 0) std::cout << "\n";
-	}
-
 	//std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
 	SYSTEMTIME time;
