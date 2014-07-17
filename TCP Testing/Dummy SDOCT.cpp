@@ -35,7 +35,7 @@ void SDOCT::Init()
 	setYRange(1.0);
 	setZRange(7.0);
 	setXSteps(1);
-	setYSteps(200);
+	setYSteps(4096);
 	setZSteps(1);
 }
 
@@ -195,7 +195,7 @@ void SDOCT::captureVolScan(std::vector<uint8_t>& result)
 
 	for (int i = 0; i < value; i++)
 	{
-		result.push_back((int)(rand() * 255));
+		result.push_back((int)i%16 + 10);
 	}
 
 	return;

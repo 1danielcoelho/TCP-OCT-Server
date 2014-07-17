@@ -2,8 +2,6 @@
 To-do list:
 
 >> Things to do at the lab
-	-Find out the entirety of the OCTImage object
-
 	-Testing
 		+Check to see if there is any code in the demo that renders 4d plots
 	-Qtcreator and ROS
@@ -43,27 +41,57 @@ To-do list:
 #include <sstream>
 #include <string>
 
+//int main()
+//{
+//	try
+//	{
+//		boost::asio::io_service service;
+//		SDOCT oct;
+//
+//		TCP_Server server(service, oct);
+//
+//		service.run();
+//
+//
+//	}
+//	catch (...)
+//	{
+//		std::cout << "main exception" << std::endl;
+//	}
+//
+//	return 0;
+//}
+//
+////OCT_Wrapper: msg, srv, cfg, OCT_wrapper_qtros.hpp and .cpp
+////OCT_Segmentation: msg, srv, OCT_segmentation_qtros.cpp
+//
+//
+
 int main()
 {
-try
-{
-boost::asio::io_service service;
-SDOCT oct;
+	SDOCT oct;
+	oct.Init();
 
-//oct.Init();
+	std::vector<uint8_t> voxeldata;
+	voxeldata.reserve(4096);
+	oct.captureVolScan(voxeldata);
 
-//unsigned long* cameraImage = oct.getCameraPicture(512, 512);
+	std::ofstream m_fileStream;
 
+	std::string path = "C:\\Users\\1dani_000\\Desktop\\voxeldata.txt";
 
-TCP_Server server(service, oct);
+	m_fileStream.open(path.c_str(), std::ios::binary | std::ios::out);
+	if (!m_fileStream)
+	{
+		std::cout << "Couldn't create the file!" << std::endl;
+	}
 
-service.run();
+	std::string number;
 
+	for (int i = 0; i < 4096; i++)
+	{
+		number = boost::lexical_cast<std::string>((int)((unsigned char)voxeldata[i])) + " ";
+		if (m_fileStream.is_open()) m_fileStream.write(number.c_str(), number.size());
+	}
 
-}
-catch (...)
-{
-std::cout << "main exception" << std::endl;
-}
-return 0;
 }

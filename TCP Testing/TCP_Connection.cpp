@@ -97,7 +97,7 @@ void TCP_Connection::set_oct_params(const char* paramMessage)
 	memcpy(&zsteps, &(paramMessage[21]), sizeof(uint32_t));
 	memcpy(&xoffset, &(paramMessage[25]), sizeof(float));
 	memcpy(&yoffset, &(paramMessage[29]), sizeof(float));
-
+	
 	//Set the oct params to the values from the temp variables
 	this->m_oct.setXRange(xrange);
 	this->m_oct.setYRange(yrange);
