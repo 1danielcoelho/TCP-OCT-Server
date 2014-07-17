@@ -62,24 +62,24 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Dummy SDOCT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TCP_Connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TCP_Server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SDOCT.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Dummy SDOCT.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TCP_Connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TCP_Server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDOCT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

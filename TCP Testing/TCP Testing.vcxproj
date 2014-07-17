@@ -94,13 +94,13 @@
     <Text Include="Print bytes of a streambuf.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Dummy SDOCT.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SDOCT.cpp" />
     <ClCompile Include="TCP_Connection.cpp" />
     <ClCompile Include="TCP_Server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Dummy SDOCT.h" />
+    <ClInclude Include="SDOCT.h" />
     <ClInclude Include="TCP_Connection.h" />
     <ClInclude Include="TCP_Server.h" />
   </ItemGroup>
