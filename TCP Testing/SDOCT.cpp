@@ -14,35 +14,35 @@ SDOCT::~SDOCT()
 
 void SDOCT::Init()
 {
-	std::cout << "		Initializing probe\n";
+	std::cout << "		Initializing real probe\n";
 	// Init device & probe
 	this->dev = initDevice();
 
 	this->probe = initStandardProbe(this->dev);
-	
+
 	//Setup internal data processing
 	this->proc = createProcessingForDevice(this->dev);
 
 	//Start up the probe with some valid default values
-	setXRange(2.0);
-	setYRange(2.0);
-	setZRange(2.762);
-	setXSteps(64);
-	setYSteps(64);
-	setZSteps(1024);
+	//setXRange(5.0);
+	//	setYRange(5.0);
+	//	setZRange(2.762);
+	//	setXSteps(64);
+	//	setYSteps(64);
+	//	setZSteps(1024);
 
 }
 
 void SDOCT::Close()
 {
 	closeProbe(this->probe);
-	closeDevice(this->dev);	
+	closeDevice(this->dev);
 	std::cout << "		Closing probe\n";
 }
 
 //Setting up SDK data handlers
 void SDOCT::InitDataHandler()
-{	
+{
 	std::cout << "		Initializing data handlers\n";
 	this->rawhandle = createRawData();
 	this->datahandle = createData();
@@ -54,7 +54,7 @@ void SDOCT::InitDataHandler()
 
 //clean up SDK data handler
 void SDOCT::CleanDataHandler()
-{	
+{
 	std::cout << "		Cleaning data handlers\n";
 	clearRawData(this->rawhandle);
 	clearData(this->datahandle);
@@ -155,9 +155,9 @@ double SDOCT::getZRange()
 }
 
 void SDOCT::captureVolScan(std::vector<uint8_t>& result)
-{	
+{
 	std::cout << "		Capturing volume scan\n";
-	InitDataHandler();	
+	InitDataHandler();
 
 	this->pattern = createBScanStackPattern(this->probe, this->xrange, this->xsteps, this->yrange, this->ysteps);
 
@@ -188,25 +188,22 @@ void SDOCT::captureVolScan(std::vector<uint8_t>& result)
 	//Copy data from pointer to std::vector
 	int size = this->xsteps*this->ysteps*this->zsteps;
 	//static std::vector<uint8_t> float_data;
-	
+
 	//Clear and reallocate the output vector to a spot in memory with enough free size
-	result.clear();
-	result.reserve(size);
+	result.reserve(size + 512);
 
 	std::copy(this->data, this->data + size, std::back_inserter(result));
 	std::cout << "Total number of elements: " << result.size() << std::endl;
 
 	//clean up to prepare next scan MAYBE CLEARING DATA OBJECTs
 	clearScanPattern(this->pattern);
-	result.clear();
-
 	CleanDataHandler();
 }
 
 unsigned long* SDOCT::getCameraPicture(int width, int height)
 {
 	getCameraImage(this->dev, width, height, this->camerahandle);
-    exportColoredData(this->camerahandle, ColoredDataExport_JPG, "C:\\Users\\OCT\\Desktop\\OCTci\\Test.jpg");
+	exportColoredData(this->camerahandle, ColoredDataExport_JPG, "C:\\Users\\OCT\\Desktop\\OCTci\\Test.jpg");
 	return cameradata;
 }
 

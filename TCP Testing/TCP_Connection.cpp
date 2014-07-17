@@ -1,7 +1,7 @@
 #include <TCP_Connection.h>
 
 TCP_Connection::TCP_Connection(boost::asio::io_service& io_service, SDOCT& oct) : m_socket(io_service), m_oct(oct)
-{	
+{
 }
 
 boost::asio::ip::tcp::socket& TCP_Connection::socket()
@@ -34,12 +34,12 @@ void TCP_Connection::start()
 void TCP_Connection::parse_data(const char* message)
 {
 	std::cout << "->parse data. String: " << message << "." << std::endl;
-	
-	//Received a 'P' message: Change one of the oct properties variables 
+
+	//Received a 'P' message: Change one of the oct properties variables
 	if (*message == 'P')
 	{
 		m_oct.Init();
-		
+
 		//Waits until there is something to read
 		while (m_socket.available() == 0)
 		{
@@ -48,14 +48,14 @@ void TCP_Connection::parse_data(const char* message)
 
 		//Reads the 32 bytes of the 8 4-byte variables transferred as params
 		boost::asio::read(m_socket, m_readBuffer, boost::asio::transfer_exactly(32));
-		
+
 		//Retrieves the data out of the read buffer in a simple c char array format easier to deal with
 		const char* readBufferData = boost::asio::buffer_cast<const char*>(m_readBuffer.data());
 
 		//Sets the new params into the oct
 		this->set_oct_params(readBufferData);
-				
-		//Starts up the m_volScanMessage by building the 512 byte header 
+
+		//Starts up the m_volScanMessage by building the 512 byte header
 		this->prepare_header(m_volScanMessage);
 
 		//Appends the voxel data to the m_volScanMessage
@@ -63,7 +63,7 @@ void TCP_Connection::parse_data(const char* message)
 
 		//Finds the current filesize of m_volScanMessage (used to detect when transfer is complete) and begins message transfer
 		m_fileSize = m_volScanMessage.size();
-		this->send_volScan_message();	
+		this->send_volScan_message();
 	}
 	else if (*message == 'B')
 	{
@@ -97,7 +97,7 @@ void TCP_Connection::set_oct_params(const char* paramMessage)
 	memcpy(&zsteps, &(paramMessage[21]), sizeof(uint32_t));
 	memcpy(&xoffset, &(paramMessage[25]), sizeof(float));
 	memcpy(&yoffset, &(paramMessage[29]), sizeof(float));
-	
+
 	//Set the oct params to the values from the temp variables
 	this->m_oct.setXRange(xrange);
 	this->m_oct.setYRange(yrange);
@@ -177,7 +177,7 @@ void TCP_Connection::send_volScan_message()
 
 		//Writes the remaining data to the socket
 		size_t transferred = boost::asio::write(m_socket, boost::asio::buffer(m_sendFillBuffer, ammountToSend));
-		
+
 		std::cout << "Transferred " << transferred << " bytes\n";
 
 		//Keeps track of how many bytes were written in total
@@ -186,12 +186,31 @@ void TCP_Connection::send_volScan_message()
 
 	GetSystemTime(&time);
 	WORD millisEnd = (time.wSecond * 1000) + time.wMilliseconds;
-		
+
 	std::cout << "File transfer complete!\n";
 	std::cout << m_fileSize << " " << m_volScanMessage.size() << "\n\n";
 
-	float diff = (millisEnd - millisStart)/1000.0;
+	float diff = (millisEnd - millisStart) / 1000.0;
 	std::cout << "Total time: " << diff << " s. Speed: " << (((float)m_fileSize) / diff) * (1 / 1024.0f) << " KBps " << std::endl;
+
+	std::cout << "First 100 bytes of header: \n";
+	for (int i = 0; i < 100; i++)
+	{
+		std::cout << (int)((unsigned char)m_volScanMessage[i]) << " ";
+	}
+
+	std::cout << "\n\nFirst 100 bytes of voxel data: \n";
+	for (int i = 512; i < 612; i++)
+	{
+		std::cout << (int)((unsigned char)m_volScanMessage[i]) << " ";
+	}
+
+	std::cout << "\n\nLast 100 bytes of voxel data: \n";
+	for (int i = m_fileSize - 100; i < m_fileSize; i++)
+	{
+		std::cout << (int)((unsigned char)m_volScanMessage[i]) << " ";
+	}
+
 
 	m_volScanMessage.clear();
 }

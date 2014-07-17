@@ -1,9 +1,5 @@
 //#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
 
-//TESTING
-
-//HELLO
-
 #ifndef TCP_SERVER
 #define TCP_SERVER
 
@@ -11,7 +7,7 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <Dummy SDOCT.h>
+#include <SDOCT.h>
 #include <TCP_Connection.h>
 
 //This class handles accepting and creating TCP_Connections between the server and potential clients
@@ -31,4 +27,4 @@ private:
 	void do_accept();
 };
 
-#endif 
+#endif

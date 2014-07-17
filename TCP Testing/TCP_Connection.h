@@ -16,7 +16,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <Dummy SDOCT.h>
+#include <SDOCT.h>
 
 //This class moderates the transfer of information between the server and the client. It is created by a TCP_Server instance and gets deleted when the connection is droppedy
 class TCP_Connection
@@ -41,13 +41,13 @@ public:
 
 	//Constructor receives an io_service instance and an SDOCT instance
 	TCP_Connection(boost::asio::io_service& io_service, SDOCT& m_oct);
-	
+
 	//Returns it's own socket object. Inside the class we just access the member variable directly for shorter syntax
 	boost::asio::ip::tcp::socket& socket();
 
 	//Server begins listening for messages on the socket
 	void start();
-	
+
 	//Interprets the read data and calls the intended functions
 	void parse_data(const char*);
 
@@ -58,7 +58,7 @@ public:
 	void prepare_header(std::vector<uint8_t>&);
 
 	//Sends voxel data + header to the client. Gets recursively called writing several packets
-	void TCP_Connection::send_volScan_message();		
+	void TCP_Connection::send_volScan_message();
 };
 
 #endif
