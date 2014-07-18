@@ -85,13 +85,13 @@ void SDOCT::setZRange(double zrange)
 
 void SDOCT::setXOffset(double xoffset)
 {
-	setProbeParameterFloat(this->probe, Probe_OffsetX, 0.1);
+	setProbeParameterFloat(this->probe, Probe_OffsetX, xoffset);
 	std::cout << "xoffset set to " << xoffset << std::endl;
 }
 
 void SDOCT::setYOffset(double yoffset)
 {
-	setProbeParameterFloat(this->probe, Probe_OffsetY, 0.1);
+	setProbeParameterFloat(this->probe, Probe_OffsetY, yoffset);
 	std::cout << "yoffset set to " << yoffset << std::endl;
 }
 
