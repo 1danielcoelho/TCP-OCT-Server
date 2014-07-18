@@ -25,8 +25,8 @@ public:
 	void CleanDataHandler();
 
 	//int getXSteps();
-	//	int getYSteps();
-	//	int getZSteps();
+//	int getYSteps();
+//	int getZSteps();
 
 	int getXSteps();
 	int getYSteps();
@@ -37,7 +37,7 @@ public:
 
 	double getXRange();
 	double getYRange();
-	double getZRange();
+	double getZRange();	
 	void setXRange(double);
 	void setYRange(double);
 	void setZRange(double);
@@ -48,11 +48,11 @@ public:
 	void setYOffset(double);
 
 	//void setVolScanProp(double xRange, int xSize, double yRange, int ySize);
-	//
-	//	std::vector<unsigned long> captureVolScan();
-	//
-	//	void setAScanProperties(double Contrast, double Brightness, double dBRange, double fMaxSigAmplitude);
-
+//
+//	std::vector<unsigned long> captureVolScan();
+//
+//	void setAScanProperties(double Contrast, double Brightness, double dBRange, double fMaxSigAmplitude);
+	
 	void captureVolScan(std::vector<uint8_t>&);
 
 	unsigned long* getCameraPicture(int width, int height);
@@ -83,7 +83,7 @@ private:
 
 	//Settings
 	//double xrange, yrange;
-	//	int xsteps, ysteps;
+//	int xsteps, ysteps;
 	double xrange, yrange, zrange;
 	uint32_t xsteps, ysteps, zsteps;
 
