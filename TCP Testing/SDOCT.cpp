@@ -19,30 +19,30 @@ void SDOCT::Init()
 	this->dev = initDevice();
 
 	this->probe = initStandardProbe(this->dev);
-
+	
 	//Setup internal data processing
 	this->proc = createProcessingForDevice(this->dev);
 
 	//Start up the probe with some valid default values
 	//setXRange(5.0);
-	//	setYRange(5.0);
-	//	setZRange(2.762);
-	//	setXSteps(64);
-	//	setYSteps(64);
-	//	setZSteps(1024);
+//	setYRange(5.0);
+//	setZRange(2.762);
+//	setXSteps(64);
+//	setYSteps(64);
+//	setZSteps(1024);
 
 }
 
 void SDOCT::Close()
 {
 	closeProbe(this->probe);
-	closeDevice(this->dev);
+	closeDevice(this->dev);	
 	std::cout << "		Closing probe\n";
 }
 
 //Setting up SDK data handlers
 void SDOCT::InitDataHandler()
-{
+{	
 	std::cout << "		Initializing data handlers\n";
 	this->rawhandle = createRawData();
 	this->datahandle = createData();
@@ -54,7 +54,7 @@ void SDOCT::InitDataHandler()
 
 //clean up SDK data handler
 void SDOCT::CleanDataHandler()
-{
+{	
 	std::cout << "		Cleaning data handlers\n";
 	clearRawData(this->rawhandle);
 	clearData(this->datahandle);
@@ -155,55 +155,66 @@ double SDOCT::getZRange()
 }
 
 void SDOCT::captureVolScan(std::vector<uint8_t>& result)
-{
-	std::cout << "		Capturing volume scan\n";
-	InitDataHandler();
-
-	this->pattern = createBScanStackPattern(this->probe, this->xrange, this->xsteps, this->yrange, this->ysteps);
-
-	setColoringBoundaries(this->color32handle, 0.0f, 70.0f);
-
-	rotateScanPattern(this->pattern, 0.0);
-	shiftScanPattern(this->pattern, 0.0, 0.0);
-
-	std::cout << "		Measurement starting\n";
-	startMeasurement(this->dev, this->pattern, Acquisition_AsyncFinite);
-	for (int i = 0; i < this->ysteps; i++)
+{	
+	try
 	{
-		//get data from oct
-		getRawData(this->dev, this->rawhandle);
-		//set output object
-		setProcessedDataOutput(this->proc, this->datahandle);
-		setColoredDataOutput(this->proc, this->colorhandle, this->color32handle);
-		//apply fourier trafo
-		executeProcessing(this->proc, this->rawhandle);
-		//append data to volumedata
-		appendData(this->voldata, this->datahandle, Direction_3);
+		std::cout << "		Capturing volume scan\n";
+		InitDataHandler();	
+
+		this->pattern = createBScanStackPattern(this->probe, this->xrange, this->xsteps, this->yrange, this->ysteps);
+
+		setColoringBoundaries(this->color32handle, 0.0f, 70.0f);
+
+		rotateScanPattern(this->pattern, 0.0);
+		shiftScanPattern(this->pattern, 0.0, 0.0);
+
+		std::cout << "		Measurement starting\n";
+		startMeasurement(this->dev, this->pattern, Acquisition_AsyncFinite);
+		std::cout << "		Starting for loop\n";
+		for (int i = 0; i < this->ysteps; i++)
+		{
+			//get data from oct
+			getRawData(this->dev, this->rawhandle);
+			//set output object
+			setProcessedDataOutput(this->proc, this->datahandle);
+			setColoredDataOutput(this->proc, this->colorhandle, this->color32handle);
+			//apply fourier trafo
+			executeProcessing(this->proc, this->rawhandle);
+			//append data to volumedata
+			appendData(this->voldata, this->datahandle, Direction_3);
+		}
+		std::cout << "		Measurement stopping\n";
+		stopMeasurement(this->dev);
+
+		std::cout << "		Getting data pointer\n";
+		//Get pointer to volume data
+		this->data = getDataPtr(this->voldata);
+
+		//Copy data from pointer to std::vector
+		int size = this->xsteps*this->ysteps*this->zsteps;
+		//static std::vector<uint8_t> float_data;
+	
+		//Clear and reallocate the output vector to a spot in memory with enough free size
+		result.reserve(size+512);
+
+		std::cout << "		Copying into data vector\n";
+		std::copy(this->data, this->data + size, std::back_inserter(result));
+		std::cout << "Total number of elements: " << result.size() << std::endl;
+
+		//clean up to prepare next scan MAYBE CLEARING DATA OBJECTs
+		clearScanPattern(this->pattern);
+		CleanDataHandler();
 	}
-	stopMeasurement(this->dev);
-
-	//Get pointer to volume data
-	this->data = getDataPtr(this->voldata);
-
-	//Copy data from pointer to std::vector
-	int size = this->xsteps*this->ysteps*this->zsteps;
-	//static std::vector<uint8_t> float_data;
-
-	//Clear and reallocate the output vector to a spot in memory with enough free size
-	result.reserve(size + 512);
-
-	std::copy(this->data, this->data + size, std::back_inserter(result));
-	std::cout << "Total number of elements: " << result.size() << std::endl;
-
-	//clean up to prepare next scan MAYBE CLEARING DATA OBJECTs
-	clearScanPattern(this->pattern);
-	CleanDataHandler();
+	catch(...)
+	{
+		std::cout << "Exception in captureVolScan. Has the OCT device timed out?\n";
+	}
 }
 
 unsigned long* SDOCT::getCameraPicture(int width, int height)
 {
 	getCameraImage(this->dev, width, height, this->camerahandle);
-	exportColoredData(this->camerahandle, ColoredDataExport_JPG, "C:\\Users\\OCT\\Desktop\\OCTci\\Test.jpg");
+    exportColoredData(this->camerahandle, ColoredDataExport_JPG, "C:\\Users\\OCT\\Desktop\\OCTci\\Test.jpg");
 	return cameradata;
 }
 
