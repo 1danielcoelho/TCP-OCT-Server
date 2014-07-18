@@ -10,13 +10,15 @@ To-do list:
 		+Finish implementing 100 byte edge tests for headers and voxel data
 			Stopped responding for no reason
 			Debug afc_test_client to see header pointer
+		+Have the server clean up after a connection a bit better
+		+Decide when to initialize/close
 	-Dynamic reconfigure
 		+Add groups to the cfg file
-		+Lidar com o Z range depender do Z steps
+		+Deal with how Z range depends on Z steps
 	
 	
 >> Improvements
-	-Have the client try and reconnect after a connection has been dropped for some reason
+	
 	
 */
 
