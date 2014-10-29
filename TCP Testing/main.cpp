@@ -1,28 +1,3 @@
-/*
-To-do list:
- 
->> Things to do at the lab
-    -Testing
-        +Check to see if there is any code in the demo that renders 4d plots
-    -Qtcreator and ROS
-        +Figure out how to run the OCT_Wrapper node and how to call its functions and services
-        
-    -Dynamic reconfigure
-        +Add groups to the cfg file
-        +Lidar com o Z range depender do Z steps
-        +Complete publishImageDataFromDynamicReconfigure
-        +Add octType in the interface exactly like the publish function (like a param pre-set)
-    -Service, requests and responses
-        +Are all three services needed? We could pass the octType or the other params through the message
- 
->> Improvements
-    -Find a way of looking at the data produced by a volume scan
-    -Have the client try and reconnect after a connection has been dropped for some reason
-    -Find out the networks speed at the lab and consider transferring the camera output
-        +JPEG compression?
- 
-*/
- 
 //#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
  
  
