@@ -1,226 +1,110 @@
-#include "SDOCT.h"
+#ifndef SDOCT_H
+#define SDOCT_H
 
-SDOCT::SDOCT() : xrange(NULL), xsteps(NULL), yrange(NULL), ysteps(NULL)
+#include "SpectralRadar.h"
+#include <sstream>
+#include <string>
+#include "iostream"
+#include "vector"
+#include "iterator"
+#include <stdint.h>
+
+using namespace std;
+
+
+class SDOCT
 {
-	//Init OCT device
-	//Init();
-}
+public:
 
-SDOCT::~SDOCT()
-{
+	SDOCT();
+	~SDOCT();
 
+	void Init();
+	void Close();
 
-}
+	void InitDataHandler();
+	void CleanDataHandler();
 
-void SDOCT::Init()
-{
-	std::cout << "		Initializing real probe\n";
-	// Init device & probe
-	this->dev = initDevice();
+	//int getXSteps();
+//	int getYSteps();
+//	int getZSteps();
 
-	this->probe = initStandardProbe(this->dev);
+	int getXSteps();
+	int getYSteps();
+	int getZSteps();
+	void setXSteps(int);
+	void setYSteps(int);
+	void setZSteps(int);
+
+	double getXRange();
+	double getYRange();
+	double getZRange();	
+	void setXRange(double);
+	void setYRange(double);
+	void setZRange(double);
+
+	double getXOffset();
+	double getYOffset();
+	void setXOffset(double);
+	void setYOffset(double);
+
+	//void setVolScanProp(double xRange, int xSize, double yRange, int ySize);
+//
+//	std::vector<unsigned long> captureVolScan();
+//
+//	void setAScanProperties(double Contrast, double Brightness, double dBRange, double fMaxSigAmplitude);
 	
-	//Setup internal data processing
-	this->proc = createProcessingForDevice(this->dev);
+	void captureVolScan(std::vector<uint8_t>&);
 
-	//Start up the probe with some valid default values
-	//setXRange(5.0);
-//	setYRange(5.0);
-//	setZRange(2.762);
-//	setXSteps(64);
-//	setYSteps(64);
-//	setZSteps(1024);
+	unsigned long* getCameraPicture(int width, int height);
 
-}
+	void setAScanProperties(double Contrast, double Brightness, double dBRange, double fMaxSigAmplitude);
 
-void SDOCT::Close()
-{
-	closeProbe(this->probe);
-	closeDevice(this->dev);	
-	std::cout << "		Closing probe\n";
-}
+private:
 
-//Setting up SDK data handlers
-void SDOCT::InitDataHandler()
-{	
-	std::cout << "		Initializing data handlers\n";
-	this->rawhandle = createRawData();
-	this->datahandle = createData();
-	this->voldata = createData();
-	this->colorhandle = createColoredData();
-	this->color32handle = createColoring32Bit(ColorScheme_RGBA32_BlackAndWhite);
-	this->camerahandle = createColoredData();
-}
+	//SDK Handles
+	OCTDeviceHandle dev;
+	ProbeHandle probe;
+	ScanPatternHandle pattern;
+	ProcessingHandle proc;
 
-//clean up SDK data handler
-void SDOCT::CleanDataHandler()
-{	
-	std::cout << "		Cleaning data handlers\n";
-	clearRawData(this->rawhandle);
-	clearData(this->datahandle);
-	clearData(this->voldata);
-	clearColoredData(this->colorhandle);
-	clearColoring32Bit(this->color32handle);
-	clearColoredData(this->camerahandle);
-}
+	//SDK Data Handles
+	RawDataHandle rawhandle;
+	DataHandle datahandle;
+	DataHandle voldata;
+	ColoredDataHandle colorhandle;
+	ColoredDataHandle volcolorhandle;
+	Coloring32BitHandle color32handle;
+	ColoredDataHandle camerahandle;
 
-//Setters
-void SDOCT::setXRange(double xrange)
-{
-	this->xrange = xrange;
-	std::cout << "xrange set to " << xrange << std::endl;
-}
+	//Daten Pointer
+	float *data;
+	unsigned long *colordata;
+	unsigned long* cameradata;
 
-void SDOCT::setYRange(double yrange)
-{
-	this->yrange = yrange;
-	std::cout << "yrange set to " << yrange << std::endl;
-}
+	//Settings
+	//double xrange, yrange;
+//	int xsteps, ysteps;
+	double xrange, yrange, zrange;
+	uint32_t xsteps, ysteps, zsteps;
 
-void SDOCT::setZRange(double zrange)
-{
-	this->zrange = zrange;
-	std::cout << "zrange set to " << zrange << std::endl;
-}
+	int numAScans;
+	int spokesteps;
 
-void SDOCT::setXOffset(double xoffset)
-{
-	setProbeParameterFloat(this->probe, Probe_OffsetX, xoffset);
-	std::cout << "xoffset set to " << xoffset << std::endl;
-}
+	double xshift;
+	double yshift;
+	double angle;
 
-void SDOCT::setYOffset(double yoffset)
-{
-	setProbeParameterFloat(this->probe, Probe_OffsetY, yoffset);
-	std::cout << "yoffset set to " << yoffset << std::endl;
-}
+	//Flags
+	bool BScanPropertiesFlag;
+	bool BScanAttitudeFlag;
+	bool BScanSpokesFlag;
 
-void SDOCT::setXSteps(int xsteps)
-{
-	this->xsteps = xsteps;
-	std::cout << "xsteps set to " << xsteps << std::endl;
-}
+	//Methoden
+	void UpdateBScanProperties();
+	void UpdateBScanAttitude();
 
-void SDOCT::setYSteps(int ysteps)
-{
-	this->ysteps = ysteps;
-	std::cout << "ysteps set to " << ysteps << std::endl;
-}
-
-void SDOCT::setZSteps(int zsteps)
-{
-	this->zsteps = zsteps;
-	std::cout << "zsteps set to " << zsteps << std::endl;
-}
-
-//Getters
-int SDOCT::getXSteps()
-{
-	return this->xsteps;
-}
-
-int SDOCT::getYSteps()
-{
-	return this->ysteps;
-}
-
-int SDOCT::getZSteps()
-{
-	return this->zsteps;
-}
-
-double SDOCT::getXOffset()
-{
-	return getProbeParameterFloat(this->probe, Probe_OffsetX);
-}
-
-double SDOCT::getYOffset()
-{
-	return getProbeParameterFloat(this->probe, Probe_OffsetY);
-}
-
-double SDOCT::getXRange()
-{
-	return this->xrange;
-}
-
-double SDOCT::getYRange()
-{
-	return this->yrange;
-}
-
-double SDOCT::getZRange()
-{
-	return this->zrange;
-}
-
-void SDOCT::captureVolScan(std::vector<uint8_t>& result)
-{	
-	try
-	{
-		std::cout << "		Capturing volume scan\n";
-		InitDataHandler();	
-
-		this->pattern = createBScanStackPattern(this->probe, this->xrange, this->xsteps, this->yrange, this->ysteps);
-
-		setColoringBoundaries(this->color32handle, 0.0f, 70.0f);
-
-		rotateScanPattern(this->pattern, 0.0);
-		shiftScanPattern(this->pattern, 0.0, 0.0);
-
-		std::cout << "		Measurement starting\n";
-		startMeasurement(this->dev, this->pattern, Acquisition_AsyncFinite);
-		std::cout << "		Starting for loop\n";
-		for (int i = 0; i < this->ysteps; i++)
-		{
-			//get data from oct
-			getRawData(this->dev, this->rawhandle);
-			//set output object
-			setProcessedDataOutput(this->proc, this->datahandle);
-			setColoredDataOutput(this->proc, this->colorhandle, this->color32handle);
-			//apply fourier trafo
-			executeProcessing(this->proc, this->rawhandle);
-			//append data to volumedata
-			appendData(this->voldata, this->datahandle, Direction_3);
-		}
-		std::cout << "		Measurement stopping\n";
-		stopMeasurement(this->dev);
-
-		std::cout << "		Getting data pointer\n";
-		//Get pointer to volume data
-		this->data = getDataPtr(this->voldata);
-
-		//Copy data from pointer to std::vector
-		int size = this->xsteps*this->ysteps*this->zsteps;
-		//static std::vector<uint8_t> float_data;
-	
-		//Clear and reallocate the output vector to a spot in memory with enough free size
-		result.reserve(size+512);
-
-		std::cout << "		Copying into data vector\n";
-		std::copy(this->data, this->data + size, std::back_inserter(result));
-		std::cout << "Total number of elements: " << result.size() << std::endl;
-
-		//clean up to prepare next scan MAYBE CLEARING DATA OBJECTs
-		clearScanPattern(this->pattern);
-		CleanDataHandler();
-	}
-	catch(...)
-	{
-		std::cout << "Exception in captureVolScan. Has the OCT device timed out?\n";
-	}
-}
-
-unsigned long* SDOCT::getCameraPicture(int width, int height)
-{
-	getCameraImage(this->dev, width, height, this->camerahandle);
-    exportColoredData(this->camerahandle, ColoredDataExport_JPG, "C:\\Users\\OCT\\Desktop\\OCTci\\Test.jpg");
-	return cameradata;
-}
+};
 
 
-
-
-
-
-
+#endif // SDOCT_H
