@@ -147,12 +147,13 @@ void TCP_Connection::prepare_header(std::vector<uint8_t>& header)
 {
     header.clear();
     header.reserve(512);
+	header.resize(512);
  
     //Header size is 512 bytes in total. "Allocate" them here by pushing back NULLs into the vector
-    for (int i = 0; i < 512; i++)
-    {
-        header.push_back(NULL);
-    }
+    //for (int i = 0; i < 512; i++)
+    //{
+     //   header.push_back(NULL);
+    //}
  
     //Fetch the current parameters from the oct scanner to build the header. Only these parameters are used by the client application, but the 512 byte size is kept in case other parameters start being used in the future
     uint32_t numOfImagesInFile = this->m_oct.getYSteps();
@@ -230,7 +231,6 @@ void TCP_Connection::send_volScan_message()
 	{
 		std::cout << (int)((unsigned char)m_volScanMessage[i]) << " ";
 	}
-	
- 
+
     m_volScanMessage.clear();
 }
