@@ -2,7 +2,8 @@
 #define SDOCT_H
 
 #include "SpectralRadar.h"
-#include "string"
+#include <sstream>
+#include <string>
 #include "iostream"
 #include "vector"
 #include "iterator"
