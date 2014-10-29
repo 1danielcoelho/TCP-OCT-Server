@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -7,56 +7,12 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Mutex cout shared pointer worker thread.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Post dispatch.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Strand.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Synchronous TCP client.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Asynchronous TCP server.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Asynchronous Daytime server.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Buffer a image file to a string.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="TCP File receive.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="TCP File send.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Server V1.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Server V2.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Server V3.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="image message scan width.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Print bytes of a streambuf.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -73,6 +29,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="SpectralRadar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="TCP_Connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
