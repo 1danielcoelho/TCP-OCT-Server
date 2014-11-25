@@ -20,6 +20,8 @@ To-do list:
 5.3. Find out the networks speed at the lab and consider transferring the camera output
 5.3.1. JPEG compression?
 
+test
+
 */
 //#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
 
